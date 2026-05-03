@@ -1,11 +1,15 @@
 #define INCLUDE_SDL
 #define INCLUDE_SDL_IMAGE
 #define INCLUDE_SDL_MIXER
-#include "SDL_include.h"
+// #include "SDL_include.h"
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 
 #include <iostream>
 
-#include "Game.h"
+#include "../include/Game.h"
 
 // ponteiro que mantéma instância (única) da classe
 Game* Game::instance = nullptr;

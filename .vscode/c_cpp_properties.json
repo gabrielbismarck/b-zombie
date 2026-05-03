@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/include", // Indica sua pasta local de headers [3]
+                "/usr/include/SDL2"           // Indica onde a SDL2 está instalada no Linux [2, 4]
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c11",
+            "cppStandard": "c++11", // Ativa o suporte ao C++11 exigido na disciplina [5]
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

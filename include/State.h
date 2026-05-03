@@ -3,11 +3,15 @@
 
 #include "Music.h"
 #include "Sprite.h"
+#include "GameObject.h"
 
 class State {
 
     public:
         State();
+        ~State();
+
+        void AddObject(GameObject* go);
 
         bool QuitRequested ();
         void LoadAssets ();
@@ -15,8 +19,9 @@ class State {
         void Render ();
 
     private:
-        Sprite bg;
+        // Sprite bg;
         Music music;
         bool quitRequested;
+        std::vector<std::unique_ptr<GameObject>> objectArray;
 };
 #endif
