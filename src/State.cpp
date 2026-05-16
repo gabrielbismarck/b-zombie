@@ -2,6 +2,8 @@
 #include "GameObject.h"
 #include "SpriteRenderer.h"
 #include "Zombie.h"
+#include "TileMap.h"
+#include "TileSet.h"
 
 State::State(){
     quitRequested = false;
@@ -12,15 +14,32 @@ State::State(){
     bgGo->box.x = 0;
     bgGo->box.y = 0;
     AddObject(bgGo);
-    
-    //  Criação do Zumbi
-    GameObject* zombieGo = new GameObject();
-    zombieGo->AddComponent(new Zombie(*zombieGo));
-    zombieGo->box.x = 600;
-    zombieGo->box.y = 450;
-    AddObject(zombieGo);
 
+    // Criação do mapa
+    GameObject* mapGo = new GameObject();
+    TileSet* tileSet = new TileSet(64, 64, "assets/img/TileSet.png");
+    mapGo->AddComponent(new TileMap(*mapGo, "assets/map/map.txt", tileSet));
 
+    // Configura a posição do mapa na origem
+    mapGo->box.x = 0;
+    mapGo->box.y = 0;
+    AddObject(mapGo);
+
+    //  Criação do Zumbi 1
+    GameObject* zombieGo1 = new GameObject();
+    zombieGo1->AddComponent(new Zombie(*zombieGo1));
+    zombieGo1->box.x = 600;
+    zombieGo1->box.y = 450;
+    AddObject(zombieGo1);
+
+    //  Criação do Zumbi 2
+    GameObject* zombieGo2 = new GameObject();
+    zombieGo2->AddComponent(new Zombie(*zombieGo2));
+    zombieGo2->box.x = 700;
+    zombieGo2->box.y = 450;
+    AddObject(zombieGo2);
+
+    // Configuração da música de fundo
     music.Open("assets/audio/BGM.wav");
     music.Play();
 

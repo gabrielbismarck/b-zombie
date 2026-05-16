@@ -6,6 +6,8 @@
 Zombie::Zombie(GameObject& associated) : Component(associated){
     hitpoints = 100;
 
+    deathSound.Open("assets/audio/Dead.wav");
+
     SpriteRenderer* spr = new SpriteRenderer(associated, "assets/img/Enemy.png", 3, 2);
 
     spr->SetFrame(1);
@@ -13,17 +15,21 @@ Zombie::Zombie(GameObject& associated) : Component(associated){
 }
 
 void Zombie::Damage(int damage){
-    hitpoints -= damage;
-
-    if (hitpoints <= 0){
-        SpriteRenderer* spr = (SpriteRenderer*) associated.GetComponent<SpriteRenderer>();
-        if (spr != nullptr)
-            spr->SetFrame(5);
+    if (hitpoints > 0){
+        hitpoints -= damage;
+        
+        if (hitpoints <= 0){
+            deathSound.Play(1);
+            SpriteRenderer* spr = (SpriteRenderer*) associated.GetComponent<SpriteRenderer>();
+            if (spr != nullptr)
+                spr->SetFrame(5);
+        }
     }
+        
 }
 
 void Zombie::Update(float dt){
-   Damage(1);
+   Damage(5);
 }
 
 void Zombie::Render(){
