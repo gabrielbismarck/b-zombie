@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include "Resources.h"
 #include "Sprite.h"
 #include "Game.h"
 
@@ -11,9 +11,6 @@ Sprite::Sprite() {
     frameCountH = 1;
     currentFrame = 0;
     texture = nullptr;
-    // width = 0;
-    // height = 0;
-    // clipRect = {0, 0, 0, 0};
 }
 
 Sprite::Sprite(std::string file, int frameCountW, int frameCountH){
@@ -21,35 +18,21 @@ Sprite::Sprite(std::string file, int frameCountW, int frameCountH){
     this->frameCountW = frameCountW;
     this->frameCountH = frameCountH;
     currentFrame = 0;
-    // width = 0;
-    // height = 0;
-    // clipRect = {0, 0, 0, 0};
-
     Open(file);
 }
 
-Sprite::~Sprite() {
-    if (texture != nullptr) {
-        SDL_DestroyTexture(texture);
-        // texture = nullptr;
-    }
-}
+Sprite::~Sprite() {}
 
 void Sprite::Open(std::string file) {
-    if (texture != nullptr) {
-        SDL_DestroyTexture(texture);
-        // texture = nullptr;
-    }
-
-    texture = IMG_LoadTexture(Game::GetInstance().GetRenderer(), file.c_str());
+    texture = Resources::GetImage(file);
 
     if (texture == nullptr) {
         std::cout << "Erro ao carregar textura: " << SDL_GetError() << std::endl;
         return;
     }
 
+    // Obtém a largura e altura total da textura usando SDL_QueryTexture
     SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
-    // SetClip(0, 0, width, height);
     SetFrame(0);
 }
 
