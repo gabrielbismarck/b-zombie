@@ -12,7 +12,9 @@ State::State(){
 
     // Criação do background
     GameObject* bgGo = new GameObject();
-    bgGo->AddComponent(new SpriteRenderer(*bgGo, "assets/img/Background.png"));
+    SpriteRenderer* bgSR = new SpriteRenderer(*bgGo, "assets/img/Background.png");
+    bgSR->SetCameraFollower(true); // O background não deve seguir a câmera
+    bgGo->AddComponent(bgSR);
     bgGo->box.x = 0;
     bgGo->box.y = 0;
     AddObject(bgGo);

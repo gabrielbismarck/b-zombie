@@ -12,6 +12,8 @@ Sprite::Sprite() {
     frameCountH = 1;
     currentFrame = 0;
     texture = nullptr;
+    cameraFollower = false; 
+
 }
 
 Sprite::Sprite(std::string file, int frameCountW, int frameCountH){
@@ -65,8 +67,11 @@ void Sprite::SetFrameCount(int frameCountW, int frameCountH) {
 void Sprite::Render(int x, int y, int w, int h) {
     
     SDL_Rect dstRect;
-
-    dstRect = {x - (int)Camera::pos.x, y - (int)Camera::pos.y, w, h};
+    
+    if(cameraFollower)
+        dstRect = {x, y, w, h};
+    else
+        dstRect = {x - (int)Camera::pos.x, y - (int)Camera::pos.y, w, h};
 
     SDL_RenderCopy(Game::GetInstance().GetRenderer(), texture, &clipRect, &dstRect);
 }
