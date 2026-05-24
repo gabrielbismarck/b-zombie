@@ -5,6 +5,7 @@
 
 #define INCLUDE_SDL_IMAGE
 #include "SDL_include.h"
+#include "Camera.h"
 
 Sprite::Sprite() {
     frameCountW = 1;
@@ -64,10 +65,8 @@ void Sprite::SetFrameCount(int frameCountW, int frameCountH) {
 void Sprite::Render(int x, int y, int w, int h) {
     
     SDL_Rect dstRect;
-    dstRect.x = x;
-    dstRect.y = y;
-    dstRect.w = w;
-    dstRect.h = h;
+
+    dstRect = {x - (int)Camera::pos.x, y - (int)Camera::pos.y, w, h};
 
     SDL_RenderCopy(Game::GetInstance().GetRenderer(), texture, &clipRect, &dstRect);
 }

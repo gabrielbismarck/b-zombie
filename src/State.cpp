@@ -4,6 +4,7 @@
 #include "Zombie.h"
 #include "TileMap.h"
 #include "TileSet.h"
+#include "Camera.h"
 #include "InputManager.h"
 
 State::State(){
@@ -41,6 +42,8 @@ void State::AddObject(GameObject* go) {
 }
 
 void State::Update(float dt) {
+
+    Camera::Update(dt);
     
     InputManager& input = InputManager::GetInstance();
 
