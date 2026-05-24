@@ -26,15 +26,6 @@ State::State(){
     mapGo->box.y = 0;
     AddObject(mapGo);
 
-    //  Criação do Zumbi 1
-    // GameObject* zombieGo1 = new GameObject();
-    // zombieGo1->AddComponent(new Zombie(*zombieGo1));
-    // zombieGo1->box.x = 600;
-    // zombieGo1->box.y = 450;
-    // AddObject(zombieGo1);
-
-
-
     // Configuração da música de fundo
     music.Open("assets/audio/BGM.wav");
     music.Play();
@@ -50,9 +41,6 @@ void State::AddObject(GameObject* go) {
 }
 
 void State::Update(float dt) {
-
-    int mouseX, mouseY;
-    SDL_GetMouseState(&mouseX, &mouseY);
     
     InputManager& input = InputManager::GetInstance();
 
@@ -62,8 +50,8 @@ void State::Update(float dt) {
     if (input.KeyPress(SDLK_SPACE)){
         GameObject* zombieGo1 = new GameObject();
         zombieGo1->AddComponent(new Zombie(*zombieGo1));
-        zombieGo1->box.x = mouseX;
-        zombieGo1->box.y = mouseY;
+        zombieGo1->box.x = input.GetMouseX();
+        zombieGo1->box.y = input.GetMouseY();
         AddObject(zombieGo1);
     }
  

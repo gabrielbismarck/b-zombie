@@ -14,42 +14,42 @@
 
 
 class InputManager {
-public:
+    public:
 
-    void Update();
+        void Update();
 
-    bool KeyPress (int key); 
-    bool KeyRelease (int key);
-    bool IsKeyDown (int key);
+        bool KeyPress (int key); 
+        bool KeyRelease (int key);
+        bool IsKeyDown (int key);
 
-    bool MousePress (int button);
-    bool MouseRelease (int button);
-    bool IsMouseDown (int button);
+        bool MousePress (int button);
+        bool MouseRelease (int button);
+        bool IsMouseDown (int button);
 
-    int GetMouseX();
-    int GetMouseY();
+        int GetMouseX();
+        int GetMouseY();
 
-    bool QuitRequested();
+        bool QuitRequested();
 
-    static InputManager& GetInstance();
+        static InputManager& GetInstance();
 
-private:
+    private:
 
-    InputManager();
-    ~InputManager();
+        InputManager();
+        ~InputManager();
 
-    bool mouseState[6]; 
-    int mouseUpdate[6];
+        bool mouseState[6]; 
+        int mouseUpdate[6];
 
-    std::unordered_map<int, bool> keyState; // Guarda a tecla e o estado dela
-    std::unordered_map<int, int> keyUpdate; // Guarda a tecla e o frame em que ela foi atualizada
+        std::unordered_map<int, bool> keyState; // Guarda a tecla e o estado dela
+        std::unordered_map<int, int> keyUpdate; // Guarda a tecla e o frame em que ela foi atualizada
 
-    bool quitRequested;
+        bool quitRequested;
 
-    int updateCounter;
+        int updateCounter;
 
-    int mouseX;
-    int mouseY;
+        int mouseX;
+        int mouseY;
 };
 
 #endif
