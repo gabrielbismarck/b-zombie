@@ -4,6 +4,7 @@
 #include "Zombie.h"
 #include "TileMap.h"
 #include "TileSet.h"
+#include "InputManager.h"
 
 State::State(){
     quitRequested = false;
@@ -26,18 +27,13 @@ State::State(){
     AddObject(mapGo);
 
     //  Criação do Zumbi 1
-    GameObject* zombieGo1 = new GameObject();
-    zombieGo1->AddComponent(new Zombie(*zombieGo1));
-    zombieGo1->box.x = 600;
-    zombieGo1->box.y = 450;
-    AddObject(zombieGo1);
+    // GameObject* zombieGo1 = new GameObject();
+    // zombieGo1->AddComponent(new Zombie(*zombieGo1));
+    // zombieGo1->box.x = 600;
+    // zombieGo1->box.y = 450;
+    // AddObject(zombieGo1);
 
-    //  Criação do Zumbi 2
-    GameObject* zombieGo2 = new GameObject();
-    zombieGo2->AddComponent(new Zombie(*zombieGo2));
-    zombieGo2->box.x = 700;
-    zombieGo2->box.y = 450;
-    AddObject(zombieGo2);
+
 
     // Configuração da música de fundo
     music.Open("assets/audio/BGM.wav");
@@ -54,9 +50,23 @@ void State::AddObject(GameObject* go) {
 }
 
 void State::Update(float dt) {
-    if (SDL_QuitRequested())
+
+    int mouseX, mouseY;
+    SDL_GetMouseState(&mouseX, &mouseY);
+    
+    InputManager& input = InputManager::GetInstance();
+
+    if (input.QuitRequested() || input.KeyPress(ESCAPE_KEY))
         quitRequested = true;
 
+    if (input.KeyPress(SDLK_SPACE)){
+        GameObject* zombieGo1 = new GameObject();
+        zombieGo1->AddComponent(new Zombie(*zombieGo1));
+        zombieGo1->box.x = mouseX;
+        zombieGo1->box.y = mouseY;
+        AddObject(zombieGo1);
+    }
+ 
     // Percorre todos os objetos e chama o update
     for (size_t i = 0; i < objectArray.size(); i++) {
         objectArray[i]->Update(dt);

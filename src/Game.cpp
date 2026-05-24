@@ -11,6 +11,7 @@
 
 #include "../include/Game.h"
 #include <Resources.h>
+#include <InputManager.h>
 
 // ponteiro que mantéma instância (única) da classe
 Game* Game::instance = nullptr;
@@ -139,6 +140,8 @@ void Game::Run() {
     while (!state->QuitRequested()) {
         state->Update(0);
         state->Render();
+
+        InputManager::GetInstance().Update();
 
         SDL_RenderPresent(renderer);
         SDL_Delay(33);
