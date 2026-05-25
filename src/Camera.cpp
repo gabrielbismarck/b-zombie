@@ -24,13 +24,13 @@ void Camera::Update(float dt){
     else{
         
         InputManager& input = InputManager::GetInstance();
-        if(input.IsKeyDown(SDLK_LEFT))
+        if(input.IsKeyDown(LEFT_ARROW_KEY))
             pos.x -= 200 * dt;
-        if(input.IsKeyDown(SDLK_RIGHT))
+        if(input.IsKeyDown(RIGHT_ARROW_KEY))
             pos.x += 200 * dt;
-        if(input.IsKeyDown(SDLK_UP))
+        if(input.IsKeyDown(UP_ARROW_KEY))
             pos.y -= 200 * dt;
-        if(input.IsKeyDown(SDLK_DOWN))
+        if(input.IsKeyDown(DOWN_ARROW_KEY))
             pos.y += 200 * dt;
     }
 }
