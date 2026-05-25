@@ -4,13 +4,17 @@
 #include "Zombie.h"
 #include "TileMap.h"
 #include "TileSet.h"
+#include "Camera.h"
+#include "InputManager.h"
 
 State::State(){
     quitRequested = false;
 
     // Criação do background
     GameObject* bgGo = new GameObject();
-    bgGo->AddComponent(new SpriteRenderer(*bgGo, "assets/img/Background.png"));
+    SpriteRenderer* bgSR = new SpriteRenderer(*bgGo, "assets/img/Background.png");
+    bgSR->SetCameraFollower(true); // O background não deve seguir a câmera
+    bgGo->AddComponent(bgSR);
     bgGo->box.x = 0;
     bgGo->box.y = 0;
     AddObject(bgGo);
@@ -24,20 +28,6 @@ State::State(){
     mapGo->box.x = 0;
     mapGo->box.y = 0;
     AddObject(mapGo);
-
-    //  Criação do Zumbi 1
-    GameObject* zombieGo1 = new GameObject();
-    zombieGo1->AddComponent(new Zombie(*zombieGo1));
-    zombieGo1->box.x = 600;
-    zombieGo1->box.y = 450;
-    AddObject(zombieGo1);
-
-    //  Criação do Zumbi 2
-    GameObject* zombieGo2 = new GameObject();
-    zombieGo2->AddComponent(new Zombie(*zombieGo2));
-    zombieGo2->box.x = 700;
-    zombieGo2->box.y = 450;
-    AddObject(zombieGo2);
 
     // Configuração da música de fundo
     music.Open("assets/audio/BGM.wav");
@@ -54,9 +44,22 @@ void State::AddObject(GameObject* go) {
 }
 
 void State::Update(float dt) {
-    if (SDL_QuitRequested())
+
+    Camera::Update(dt);
+    
+    InputManager& input = InputManager::GetInstance();
+
+    if (input.QuitRequested() || input.KeyPress(ESCAPE_KEY))
         quitRequested = true;
 
+    if (input.KeyPress(SDLK_SPACE)){
+        GameObject* zombieGo1 = new GameObject();
+        zombieGo1->AddComponent(new Zombie(*zombieGo1));
+        zombieGo1->box.x = input.GetMouseX();
+        zombieGo1->box.y = input.GetMouseY();
+        AddObject(zombieGo1);
+    }
+ 
     // Percorre todos os objetos e chama o update
     for (size_t i = 0; i < objectArray.size(); i++) {
         objectArray[i]->Update(dt);

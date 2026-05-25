@@ -22,6 +22,7 @@ class Sprite {
         int GetWidth ();
         int GetHeight ();
         bool IsOpen ();
+        bool cameraFollower;
 
     private:
         int frameCountW;

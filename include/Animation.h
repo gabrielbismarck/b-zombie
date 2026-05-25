@@ -3,14 +3,13 @@
 
 class Animation {
     public:
-        Animation(int frameStart, int frameEnd, float frameTime);
         
+        Animation(int frameStart = 0, int frameEnd = 0, float frameTime = 0);
+
         int frameStart;
         int frameEnd;
         float frameTime;
 
 };
 
-
-
-#endif
+#endif 

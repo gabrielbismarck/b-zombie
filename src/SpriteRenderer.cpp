@@ -30,3 +30,7 @@ void SpriteRenderer::SetFrame(int frame) {
 void SpriteRenderer::Render() {
     sprite.Render(associated.box.x, associated.box.y, associated.box.w, associated.box.h);
 }
+
+void SpriteRenderer::SetCameraFollower(bool follower) {
+    sprite.cameraFollower = follower;
+}

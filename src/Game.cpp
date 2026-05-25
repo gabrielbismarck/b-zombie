@@ -11,6 +11,7 @@
 
 #include "../include/Game.h"
 #include <Resources.h>
+#include <InputManager.h>
 
 // ponteiro que mantéma instância (única) da classe
 Game* Game::instance = nullptr;
@@ -47,6 +48,8 @@ Game::Game (std::string title, int width, int height) {
     window = nullptr;
     renderer = nullptr; 
     state = nullptr;
+    frameStart = 0;
+    dt = 0;
 
     // Inicia a biblioteca SDL e auxiliares
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0) {
@@ -137,8 +140,13 @@ SDL_Renderer* Game::GetRenderer() {
 
 void Game::Run() {
     while (!state->QuitRequested()) {
-        state->Update(0);
+        
+        CalculateDeltaTime();
+        InputManager::GetInstance().Update();
+
+        state->Update(dt);
         state->Render();
+
 
         SDL_RenderPresent(renderer);
         SDL_Delay(33);
@@ -149,5 +157,15 @@ void Game::Run() {
     Resources::ClearSounds();
 }
     
+void Game::CalculateDeltaTime() {
+    
+    int currentTime = SDL_GetTicks();
+    // frameAtual - frameAnterior em segundos
+    dt = (currentTime - frameStart) / 1000.0f;
+    frameStart = currentTime;
+}
 
-
+float Game::GetDeltaTime() {
+    CalculateDeltaTime();
+    return dt;
+}

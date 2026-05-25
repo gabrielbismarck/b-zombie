@@ -14,10 +14,10 @@ class SpriteRenderer : public Component {
         void Render();
         void SetFrame(int frame);
 
+        void SetCameraFollower(bool follower);
+
     private:
         Sprite sprite;
 };
-
-
 
 #endif
