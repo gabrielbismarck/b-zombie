@@ -37,19 +37,20 @@ void Animator::Render() {}
 
 void Animator::SetAnimation(std::string name) {
     
-    auto it = animations.find(name);
     
-    if (it != animations.end()) {
+    
+    auto it = animations.find(name);
+
+    if (it != animations.end() && current != name) {
+        current = name;
         frameStart = it->second.frameStart;
         frameEnd = it->second.frameEnd;
         frameTime = it->second.frameTime;
         currentFrame = frameStart;
         timeElapsed = 0;
 
-        SpriteRenderer* spr = associated.GetComponent<SpriteRenderer>();
-
-        if (spr != nullptr)
-            spr->SetFrame(currentFrame);
+        if (auto sprite = associated.GetComponent<SpriteRenderer>()) 
+            sprite->SetFrame(currentFrame);
         
     }
 }

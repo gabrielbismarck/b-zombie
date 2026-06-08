@@ -15,6 +15,7 @@ class Animator : public Component {
         void Render(); 
         void SetAnimation(std::string name);
         void AddAnimation(std::string name, Animation anim);
+        std::string current;
 
     private:
 

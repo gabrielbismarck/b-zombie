@@ -13,7 +13,8 @@ Sprite::Sprite() {
     currentFrame = 0;
     texture = nullptr;
     cameraFollower = false; 
-
+    scale = Vec2{1, 1};
+    flip = SDL_FLIP_NONE;
 }
 
 Sprite::Sprite(std::string file, int frameCountW, int frameCountH){
@@ -21,6 +22,11 @@ Sprite::Sprite(std::string file, int frameCountW, int frameCountH){
     this->frameCountW = frameCountW;
     this->frameCountH = frameCountH;
     currentFrame = 0;
+
+    scale = Vec2(1, 1); 
+    flip = SDL_FLIP_NONE;
+    cameraFollower = false;
+
     Open(file);
 }
 
@@ -36,7 +42,8 @@ void Sprite::Open(std::string file) {
 
     // Obtém a largura e altura total da textura usando SDL_QueryTexture
     SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
-    SetFrame(0);
+    SetClip(0, 0, GetWidth(), GetHeight()); 
+
 }
 
 void Sprite::SetClip(int x, int y, int w, int h) {
@@ -64,26 +71,44 @@ void Sprite::SetFrameCount(int frameCountW, int frameCountH) {
     this->frameCountH = frameCountH;
     SetFrame(0);
 }
-void Sprite::Render(int x, int y, int w, int h) {
+void Sprite::Render(int x, int y, int w, int h, float angle) {
     
     SDL_Rect dstRect;
     
-    if(cameraFollower)
-        dstRect = {x, y, w, h};
-    else
-        dstRect = {x - (int)Camera::pos.x, y - (int)Camera::pos.y, w, h};
+    if(cameraFollower){
+        dstRect.x = x;
+        dstRect.y = y;
+    }
+    else{
+        dstRect.x = x - (int)Camera::pos.x;
+        dstRect.y = y - (int)Camera::pos.y;
+    }
 
-    SDL_RenderCopy(Game::GetInstance().GetRenderer(), texture, &clipRect, &dstRect);
+    dstRect.w = (w != 0) ? w : GetWidth(); 
+    dstRect.h = (h != 0) ? h : GetHeight();
+
+    SDL_RenderCopyEx(Game::GetInstance().GetRenderer(), texture, &clipRect, &dstRect, angle, nullptr, flip);
+
 }
 
 int Sprite::GetWidth() {
-    return width / frameCountW;
+    return (int)((width / frameCountW) * scale.x);
 }
 
 int Sprite::GetHeight() {
-    return height / frameCountH;
+    return (int)((height / frameCountH) * scale.y);
+
 }
 
 bool Sprite::IsOpen() {
     return texture != nullptr;
+}
+
+void Sprite::SetScale(float scaleX, float scaleY) {
+    if (scaleX != 0) scale.x = scaleX;
+    if (scaleY != 0) scale.y = scaleY;
+}
+
+void Sprite::SetFlip(SDL_RendererFlip flip) {
+    this->flip = flip;
 }
