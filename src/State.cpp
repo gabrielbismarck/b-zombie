@@ -61,7 +61,6 @@ std::weak_ptr<GameObject> State::AddObject(GameObject* go) {
     if (started)
         ptr->Start();
 
-    std::cout << "Objetos na state: " << objectArray.size() << std::endl;
     return std::weak_ptr<GameObject>(ptr);
 }
 
