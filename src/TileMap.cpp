@@ -21,7 +21,7 @@ void TileMap::Load(std::string file) {
     }
 
     char comma; // Variável para ler as vírgulas
-    input >> mapWidth >> comma >> mapHeight >> comma >> mapDepth;
+    input >> mapWidth >> comma >> mapHeight >> comma >> mapDepth >> comma;
     tileMatrix.resize(mapWidth * mapHeight * mapDepth);
 
     // Leitura dos dados do mapa. Tiles vazios são representados por -1

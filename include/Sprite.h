@@ -5,6 +5,7 @@
 
 #define INCLUDE_SDL
 #include "SDL_include.h"
+#include "Vec2.h"
 
 class Sprite {
     public:
@@ -12,9 +13,13 @@ class Sprite {
         Sprite(std::string file, int frameCountW = 1, int frameCountH = 1);
         ~Sprite();
 
+        void SetScale (float scaleX, float scaleY);
+        Vec2 GetScale();
+        void SetFlip (SDL_RendererFlip flip);
+
         void Open (std::string file);
         void SetClip (int x, int y, int w, int h);
-        void Render (int x, int y, int w, int h);
+        void Render (int x, int y, int w = 0, int h = 0, float angle = 0);
 
         void SetFrame(int frame);
         void SetFrameCount(int frameCountW, int frameCountH);
@@ -33,6 +38,9 @@ class Sprite {
         int width;
         int height;
         SDL_Rect clipRect;
+
+        Vec2 scale;
+        SDL_RendererFlip flip;
 };
 
 #endif

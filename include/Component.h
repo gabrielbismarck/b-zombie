@@ -10,6 +10,7 @@ class Component{
         virtual ~Component();
         virtual void Update (float dt) = 0;
         virtual void Render() = 0;
+        virtual void Start(){};
 
     protected:
         GameObject& associated;

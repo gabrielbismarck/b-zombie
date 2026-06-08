@@ -17,8 +17,8 @@ void Camera::Unfollow(){
 void Camera::Update(float dt){
     if(focus != nullptr){
      // A janeça é de 1200x900, então o centro é 600x450
-        pos.x = focus->box.x + focus->box.GetCenter().x - 600;
-        pos.y = focus->box.y + focus->box.GetCenter().y - 450;
+        pos.x = focus->box.GetCenter().x - 600.0f;
+        pos.y = focus->box.GetCenter().y - 450.0f;
 
     }
     else{

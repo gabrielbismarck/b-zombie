@@ -6,9 +6,13 @@
 #include "TileSet.h"
 #include "Camera.h"
 #include "InputManager.h"
+#include "Character.h"
+#include "PlayerController.h"
+#include <iostream>
 
 State::State(){
     quitRequested = false;
+    started = false;
 
     // Criação do background
     GameObject* bgGo = new GameObject();
@@ -21,7 +25,7 @@ State::State(){
 
     // Criação do mapa
     GameObject* mapGo = new GameObject();
-    TileSet* tileSet = new TileSet(64, 64, "assets/img/TileSet.png");
+    TileSet* tileSet = new TileSet(64, 64, "assets/img/Tileset.png");
     mapGo->AddComponent(new TileMap(*mapGo, "assets/map/map.txt", tileSet));
 
     // Configura a posição do mapa na origem
@@ -33,14 +37,31 @@ State::State(){
     music.Open("assets/audio/BGM.wav");
     music.Play();
 
+     // Criação do Player
+    GameObject* characterGo = new GameObject();
+    characterGo->AddComponent(new Character(*characterGo, "assets/img/Player.png"));
+    characterGo->AddComponent(new PlayerController(*characterGo));
+    
+    characterGo->box.x = 600;
+    characterGo->box.y = 600;
+
+    AddObject(characterGo);
+    Camera::Follow(characterGo);
+
 }
 
 State::~State(){
     objectArray.clear();
 }
 
-void State::AddObject(GameObject* go) {
-    objectArray.emplace_back(go);
+std::weak_ptr<GameObject> State::AddObject(GameObject* go) {
+    std::shared_ptr<GameObject> ptr(go);
+    objectArray.push_back(ptr);
+
+    if (started)
+        ptr->Start();
+
+    return std::weak_ptr<GameObject>(ptr);
 }
 
 void State::Update(float dt) {
@@ -55,8 +76,8 @@ void State::Update(float dt) {
     if (input.KeyPress(SDLK_SPACE)){
         GameObject* zombieGo1 = new GameObject();
         zombieGo1->AddComponent(new Zombie(*zombieGo1));
-        zombieGo1->box.x = input.GetMouseX();
-        zombieGo1->box.y = input.GetMouseY();
+        zombieGo1->box.x = input.GetMouseX() + Camera::pos.x;
+        zombieGo1->box.y = input.GetMouseY() + Camera::pos.y;
         AddObject(zombieGo1);
     }
  
@@ -84,4 +105,28 @@ void State::Render() {
 
 bool State::QuitRequested() {
     return quitRequested;
+}
+
+void State::Start() {
+    LoadAssets();
+
+    for (size_t i = 0; i < objectArray.size(); i++) {
+        objectArray[i]->Start();
+    }
+    
+    started = true;
+    
+}
+
+std::weak_ptr<GameObject> State::GetObjectPtr(GameObject* go) {
+    for (size_t i = 0; i < objectArray.size(); i++) {
+        if (objectArray[i].get() == go) {
+            return std::weak_ptr<GameObject>(objectArray[i]);
+        }
+    }
+    return std::weak_ptr<GameObject>();
+}
+
+void State::LoadAssets() {
+    
 }

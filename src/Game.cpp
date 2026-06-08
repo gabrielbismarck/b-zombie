@@ -16,27 +16,14 @@
 // ponteiro que mantéma instância (única) da classe
 Game* Game::instance = nullptr;
 
-/* GetInstance(). Nesse método, a primeira coisa a se
-fazer é checar se já há uma instância dela rodando (instance != nullptr),
-se já existir, o retorne. Se não existir, instancie a primeira (e única!)
-instância de Game usando new.  */
-
 Game& Game::GetInstance() {
-    // Cria a instância com o título
     if (instance == nullptr) {
         instance = new Game("Gabriel Bismarck - 17/0103323", 1200, 900);
     }
-    return *instance; // retorna a instância como referência
+    return *instance;
 }
 
 
-/**
- * @brief Construtor da classe Game.
- * @details Inicializa a classe Game com um título e dimensões de janela.
- * @param title Título da janela.
- * @param width Largura da janela em pixels.
- * @param height Altura da janela em pixels.
- */
 Game::Game (std::string title, int width, int height) {
 
     if (instance != nullptr) {
@@ -100,11 +87,6 @@ Game::Game (std::string title, int width, int height) {
     state = new State();
 }
 
-/**
- * @brief Destrutor da classe Game.
- * @details Libera a memória alocada dinamicamente pela instância da classe Game.
- * Destroi o renderizador, a janela e fecha a biblioteca SDL.
- */
 Game::~Game() {
     if (state != nullptr) {
         delete state;
@@ -139,14 +121,17 @@ SDL_Renderer* Game::GetRenderer() {
 }
 
 void Game::Run() {
+    state->Start();
     while (!state->QuitRequested()) {
         
         CalculateDeltaTime();
         InputManager::GetInstance().Update();
 
+        
+        SDL_RenderClear(renderer);
+
         state->Update(dt);
         state->Render();
-
 
         SDL_RenderPresent(renderer);
         SDL_Delay(33);

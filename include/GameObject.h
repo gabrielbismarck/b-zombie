@@ -13,6 +13,7 @@ class GameObject {
         GameObject();
         ~GameObject();
 
+        void Start();
         void Update(float dt);
         void Render();
 
@@ -32,6 +33,9 @@ class GameObject {
             return nullptr;
         }
         Rect box;
+
+        double angleDeg;
+        bool started;
 
         private:
             std::vector<std::unique_ptr<Component>> components;

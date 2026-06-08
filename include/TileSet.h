@@ -12,7 +12,7 @@ class TileSet {
 
         // Renderiza um tile específico na posição (x, y)
         // index é o indice do tile na sprite, começando do 0
-        void RenderTile(unsigned index, int x, int y);
+        void RenderTile(unsigned index, float x, float y);
 
 
         // Obtem o tamanho de um tile

@@ -2,10 +2,21 @@
 #include "Component.h"
 
 
-GameObject::GameObject() : isDead(false) {}
+GameObject::GameObject() {
+    isDead = false;
+    started = false;
+    angleDeg = 0;
+}
 
 GameObject::~GameObject() {
     components.clear();
+}
+
+void GameObject::Start() {
+    for (size_t i = 0; i < components.size(); i++) {
+        components[i]->Start();
+    }
+    started = true;
 }
 
 void GameObject::Update(float dt) {
@@ -32,6 +43,9 @@ void GameObject::RequestDelete() {
 
 void GameObject::AddComponent(Component* cpt) {
     components.emplace_back(cpt);
+
+    if (started)
+        cpt->Start();
 }
 
 void GameObject::RemoveComponent(Component* cpt) {
@@ -42,27 +56,3 @@ void GameObject::RemoveComponent(Component* cpt) {
         }
     }
 }
-
-
-
-
-/* public:
-        GameObject();
-        ~GameObject();
-
-        void Update(float dt);
-        void Render();
-
-        void IsDead();
-        void RequestDelete();
-
-        void AddComponent(Component* cpt);
-        void RemoveComponent(Component* cpt);
-
-        template<typename T>
-        T* GetComponent();
-        Rect box;
-
-        private:
-            std::vector<std::unique_ptr<Component>> components;
-            bool isDead; */
