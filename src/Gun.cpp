@@ -7,6 +7,8 @@
 #include "InputManager.h"
 #include "Camera.h"
 
+void Gun::Start() {}
+
 Gun::Gun(GameObject& associated, std::weak_ptr<GameObject> character) : Component(associated) {
 
     this->character = character;
@@ -43,12 +45,16 @@ void Gun::Update(float dt) {
     cdTimer.Update(dt);
 
     
+    if(Character::player != nullptr && characterPtr.get() == &Character::player->associated){
+        InputManager& input = InputManager::GetInstance();
+        Vec2 mousePos(input.GetMouseX() + Camera::pos.x, input.GetMouseY() + Camera::pos.y);
+        Vec2 center = characterPtr->box.GetCenter();
 
-    InputManager& input = InputManager::GetInstance();
-    Vec2 mousePos(input.GetMouseX() + Camera::pos.x, input.GetMouseY() + Camera::pos.y);
-    Vec2 center = characterPtr->box.GetCenter();
+        angle = std::atan2(mousePos.y - center.y, mousePos.x - center.x);
 
-    angle = std::atan2(mousePos.y - center.y, mousePos.x - center.x);
+    } else {
+        angle = characterPtr->angleDeg * (M_PI / 180.0f);
+    }
 
     // Criei esse pivot pra fazer a inversao do offset da gun somente no eixo x
     Vec2 pivot = characterPtr->box.GetCenter() + Vec2(0,15);
@@ -95,14 +101,24 @@ void Gun::Render() {}
 void Gun::Shoot(Vec2 target) {
     
     if (cooldownState != 0)
-    return;
+        return;
 
     Vec2 center = associated.box.GetCenter();
     angle = std::atan2(target.y - center.y, target.x - center.x);
 
+    bool targetsPlayer = true;
+    int damage = 5; // Dano padrão para os NPCs
+    
+    if (auto charGO = character.lock()) {
+        if (Character::player != nullptr && charGO->GetComponent<Character>() == Character::player) {
+            targetsPlayer = false;
+            damage = 50; // Dano elevado para o Player 
+        }
+    }
+
     GameObject* bulletGo = new GameObject();
     
-    bulletGo->AddComponent(new Bullet(*bulletGo, angle, 300.0f, 20, 500.0f));
+    bulletGo->AddComponent(new Bullet(*bulletGo, angle, 300.0f, damage, 500.0f, targetsPlayer));
     
     Vec2 gunCenter = associated.box.GetCenter();
     bulletGo->box.x = gunCenter.x - bulletGo->box.w / 2.0f;

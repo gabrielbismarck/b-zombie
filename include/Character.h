@@ -19,7 +19,7 @@ class Character : public Component {
                 Command(CommandType type, float x, float y) : type(type), pos(x, y){};
         };
 
-        Character(GameObject& associated, std::string sprite);
+        Character(GameObject& associated, std::string sprite, bool isPlayer = false);
         ~Character();
 
         void Start() override;
@@ -27,6 +27,8 @@ class Character : public Component {
         void Render() override;
 
         void Issue (Command task);
+
+        void NotifyCollision(GameObject& other) override;
 
         static Character* player;
 
@@ -38,6 +40,11 @@ class Character : public Component {
         float linearSpeed;
         int hp;
         Timer deathTimer;
+        Timer damageTimer;
+        bool isPlayer;
+
+        // bool isHit;
+        // Timer hitTimer;
 
     };
 

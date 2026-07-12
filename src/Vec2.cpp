@@ -37,8 +37,6 @@ float Vec2::InclinationX() const {
     return std::atan2(y, x);
 }
 
-// x’ = x * cosθ - y * sinθ
-// y’ = y * cosθ + x * sinθ
 Vec2 Vec2::InclinationRad(float angle) const {
     return Vec2(x*std::cos(angle) - y*std::sin(angle), y*std::cos(angle) + x*std::sin(angle));
 }
