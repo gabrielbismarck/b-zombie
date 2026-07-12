@@ -9,6 +9,9 @@
 #include "Character.h"
 #include "PlayerController.h"
 #include <iostream>
+#include "Collider.h"
+#include "Collision.h"
+#include "WaveSpawner.h"
 
 State::State(){
     quitRequested = false;
@@ -39,7 +42,7 @@ State::State(){
 
      // Criação do Player
     GameObject* characterGo = new GameObject();
-    characterGo->AddComponent(new Character(*characterGo, "assets/img/Player.png"));
+    characterGo->AddComponent(new Character(*characterGo, "assets/img/Player.png", true));
     characterGo->AddComponent(new PlayerController(*characterGo));
     
     characterGo->box.x = 600;
@@ -47,6 +50,10 @@ State::State(){
 
     AddObject(characterGo);
     Camera::Follow(characterGo);
+
+    GameObject* spawnerGo = new GameObject();
+    spawnerGo->AddComponent(new WaveSpawner(*spawnerGo));
+    AddObject(spawnerGo);
 
 }
 
@@ -72,18 +79,24 @@ void State::Update(float dt) {
 
     if (input.QuitRequested() || input.KeyPress(ESCAPE_KEY))
         quitRequested = true;
-
-    if (input.KeyPress(SDLK_SPACE)){
-        GameObject* zombieGo1 = new GameObject();
-        zombieGo1->AddComponent(new Zombie(*zombieGo1));
-        zombieGo1->box.x = input.GetMouseX() + Camera::pos.x;
-        zombieGo1->box.y = input.GetMouseY() + Camera::pos.y;
-        AddObject(zombieGo1);
-    }
  
     // Percorre todos os objetos e chama o update
     for (size_t i = 0; i < objectArray.size(); i++) {
         objectArray[i]->Update(dt);
+    }
+
+    for (size_t i = 0; i < objectArray.size(); i++) {
+        for (size_t j = i + 1; j < objectArray.size(); j++) {
+            auto col_i = objectArray[i]->GetComponent<Collider>();
+            auto col_j = objectArray[j]->GetComponent<Collider>();
+
+            if (col_i != nullptr && col_j != nullptr) {
+                if (Collision::IsColliding(col_i->box, col_j->box, objectArray[i]->angleDeg * (M_PI / 180.0), objectArray[j]->angleDeg * (M_PI / 180.0))) {
+                    objectArray[i]->NotifyCollision(*objectArray[j]);
+                    objectArray[j]->NotifyCollision(*objectArray[i]);
+                }
+            }
+        }
     }
 
     for (size_t i = 0; i < objectArray.size(); i++){
@@ -92,7 +105,6 @@ void State::Update(float dt) {
             i--;
         }
     }
-    
 }
 
 void State::Render() {

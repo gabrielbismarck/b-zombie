@@ -11,7 +11,7 @@ class Gun : public Component {
     public:
         Gun(GameObject& associated, std::weak_ptr<GameObject> character);
 
-        // void Start() override;
+        void Start() override;
         void Update(float dt) override;
         void Render() override;
         void Shoot(Vec2 target);

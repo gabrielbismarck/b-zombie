@@ -1,7 +1,7 @@
 # Variáveis para facilitar a manutenção e leitura
 CC = g++
 # Flags de compilação: inclui o padrão C++11 exigido e o diretório de headers [1, 2]
-CFLAGS = -std=c++11 -Iinclude
+CFLAGS = -std=c++11 -Iinclude -DDEBUG
 # Bibliotecas da SDL necessárias para o projeto [1, 2]
 LIBS = -lSDL2 -lSDL2_image -lSDL2_mixer
 # Arquivos de origem e nome do executável final

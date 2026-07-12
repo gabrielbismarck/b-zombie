@@ -10,12 +10,16 @@ class Zombie : public Component {
     public:
         Zombie(GameObject& associated);
 
+        ~Zombie();
+
+        void Start() override;
         void Damage(int damage);
 
         void Update(float dt) override;
         void Render() override;
 
-        
+        void NotifyCollision(GameObject& other) override;
+        static int zombieCount;
 
     private:
         int hitpoints;
@@ -23,6 +27,7 @@ class Zombie : public Component {
         bool hit;
         Sound deathSound;
         Sound hitSound;
+        Timer deathTimer;
 };
 
 

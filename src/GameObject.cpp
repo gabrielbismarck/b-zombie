@@ -56,3 +56,10 @@ void GameObject::RemoveComponent(Component* cpt) {
         }
     }
 }
+
+void GameObject::NotifyCollision(GameObject& other) {
+    // Itera por todos os componentes do objeto e chama o NotifyCollision de cada um
+    for (size_t i = 0; i < components.size(); i++) {
+        components[i]->NotifyCollision(other);
+    }
+}

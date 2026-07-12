@@ -3,14 +3,23 @@
 #include "Animator.h"
 #include "Game.h"
 #include "Gun.h"
+#include "Collider.h"
+#include "Bullet.h" 
+#include "Camera.h" 
+#include "Zombie.h" 
+#include "Sound.h"  
 
 Character* Character::player = nullptr;
 
-Character::Character(GameObject& associated, std::string sprite) : Component(associated){
+Character::Character(GameObject& associated, std::string sprite, bool isPlayer) : Component(associated){
 
-    player = this;
     hp = 100;
     linearSpeed = 100.0f;
+    this->isPlayer = isPlayer;
+
+     if (isPlayer) {
+        player = this;
+    }
 
     associated.AddComponent(new SpriteRenderer(associated, sprite, 3, 4));
     Animator* anim = new Animator(associated);
@@ -19,15 +28,22 @@ Character::Character(GameObject& associated, std::string sprite) : Component(ass
     anim->AddAnimation("walking", Animation(0, 2, 0.1f));
     anim->AddAnimation("dead", Animation(9, 11, 0.2f));
     associated.AddComponent(anim);
+    damageTimer.Restart();
+    deathTimer.Restart();
+
 }
 
 
 Character::~Character() {
-    if (player == this)
+    if (isPlayer) { // Só limpa o ponteiro se for o player real
         player = nullptr;
+    }
 }
 
 void Character::Start() {
+    
+    associated.AddComponent(new Collider(associated));
+    
     GameObject* gunGo = new GameObject();
     
     // Obtém o ponteiro para o GameObject associado ao Character para passar para a Gun
@@ -40,6 +56,8 @@ void Character::Start() {
 }
 
 void Character::Update(float dt) {
+
+    damageTimer.Update(dt);
 
     while (!taskQueue.empty()) {
         Command task = taskQueue.front();
@@ -66,16 +84,18 @@ void Character::Update(float dt) {
     SpriteRenderer* sr = associated.GetComponent<SpriteRenderer>();
 
     if (anim != nullptr)
-        
         if (hp <= 0){
-            
+            if (auto collider = associated.GetComponent<Collider>()) {
+                associated.RemoveComponent(collider);
+            }
+
             anim->SetAnimation("dead");
             deathTimer.Update(dt);
 
             if (deathTimer.Get() >= 1.5f)
                 associated.RequestDelete();
-
-        } else if (speed.Mag() > 0) {
+        } 
+        else if (speed.Mag() > 0) {
             
             anim->SetAnimation("walking");
             if (sr != nullptr) {
@@ -98,5 +118,43 @@ void Character::Render() {}
 
 void Character::Issue(Command task) {
     taskQueue.push(task);
+}
+
+void Character::NotifyCollision(GameObject& other) {
+    // Checa colisão com Bullets
+    if (auto bullet = (Bullet*)other.GetComponent<Bullet>()) {
+        // Friendly Fire: Só toma dano se a bala for destinada a este tipo de alvo
+        if ((bullet->targetsPlayer && this == player) || (!bullet->targetsPlayer && this != player)) {
+            
+            // Use o método GetDamage() pois o atributo 'damage' é privado
+            hp -= bullet->GetDamage();
+            
+            if (hp <= 0) {
+                if(isPlayer) {
+                    Camera::Unfollow();
+                }
+                
+                // Removido 'associated'. O construtor de Sound recebe apenas o caminho do arquivo
+                Sound("assets/audio/Dead.wav").Play(); 
+            } else {
+                
+                // Removido 'associated'
+                Sound("assets/audio/Hit1.wav").Play(); 
+            }
+        }
+    }
+
+    // Checa colisão com Zombies (Dano por contato com cooldown de 0.5s)
+    if (other.GetComponent<Zombie>() != nullptr && this == player) {
+        if (damageTimer.Get() >= 0.5f) {
+            hp -= 1; // Dano fixo por contato com zumbi
+            damageTimer.Restart();
+            
+            // Removido 'associated'
+            Sound("assets/audio/Hit1.wav").Play();
+            
+            if (hp <= 0) Camera::Unfollow();
+        }
+    }
 }
 
