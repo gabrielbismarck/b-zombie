@@ -6,6 +6,7 @@
 #define INCLUDE_SDL
 #include "SDL_include.h"
 #include "Vec2.h"
+#include <memory>
 
 class Sprite {
     public:
@@ -34,7 +35,9 @@ class Sprite {
         int frameCountH;
         int currentFrame;
 
-        SDL_Texture* texture;
+        // SDL_Texture* texture;
+        std::shared_ptr<SDL_Texture> texture;
+
         int width;
         int height;
         SDL_Rect clipRect;

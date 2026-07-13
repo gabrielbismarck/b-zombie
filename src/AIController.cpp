@@ -4,15 +4,20 @@
 #include "GameObject.h"
 #include <cmath>
 
+int AIController::npcCount = 0;
+
 AIController::AIController(GameObject& associated) : Component(associated) {
     state = RESTING; // Estado inicial
     restTimer = Timer();
+    npcCount++;
 }
 
 void AIController::Update(float dt) {
     // Se o jogador morrer, o NPC para de executar qualquer lógica
-    if (Character::player == nullptr) {
-        return;
+    auto character = (Character*)associated.GetComponent<Character>();
+
+     if (Character::player == nullptr || character == nullptr || character->hp <= 0) {
+        return; 
     }
 
     Vec2 playerCenter = Character::player->associated.box.GetCenter();
@@ -37,12 +42,9 @@ void AIController::Update(float dt) {
         if (distance > 10.0f) {
             Vec2 moveDir = dir.Normalize();
             float speed = 80.0f; // Velocidade do NPC
+
+            character->Issue(Character::Command(Character::Command::MOVE, moveDir.x, moveDir.y));
             
-            associated.box.x += moveDir.x * speed * dt;
-            associated.box.y += moveDir.y * speed * dt;
-            
-            // Rotaciona para olhar na direção do movimento
-            associated.angleDeg = moveDir.InclinationX() * (180.0 / M_PI);
         } 
         // Se chegou ao destino atira contra o jogador e volta a descansar
         else {
@@ -58,3 +60,7 @@ void AIController::Update(float dt) {
 }
 
 void AIController::Render() {}
+
+AIController::~AIController() {
+    npcCount--;
+}

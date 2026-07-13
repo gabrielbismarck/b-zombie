@@ -124,7 +124,7 @@ void Gun::Shoot(Vec2 target) {
     bulletGo->box.x = gunCenter.x - bulletGo->box.w / 2.0f;
     bulletGo->box.y = gunCenter.y - bulletGo->box.h / 2.0f;
     
-    Game::GetInstance().GetState().AddObject(bulletGo);
+    Game::GetInstance().GetCurrentState().AddObject(bulletGo);
 
     shootSound.Play();
     cooldownState = 1;

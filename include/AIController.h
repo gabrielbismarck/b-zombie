@@ -8,8 +8,10 @@
 class AIController : public Component {
 public:
     AIController(GameObject& associated);
+    ~AIController();
     void Update(float dt) override;
     void Render() override;
+    static int npcCount;
 
 private:
     enum AIState { MOVING, RESTING };

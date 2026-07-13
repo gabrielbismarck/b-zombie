@@ -13,7 +13,7 @@ Animator::Animator(GameObject& associated) : Component(associated) {
 
 void Animator::Update(float dt) {
     
-    if (frameTime == 0) return;
+    if (frameTime <= 0) return;
 
     timeElapsed += dt;
 

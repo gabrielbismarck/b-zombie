@@ -13,22 +13,28 @@ TileMap::TileMap(GameObject& associated, std::string file, TileSet* tileSet) : C
 }
 
 void TileMap::Load(std::string file) {
-
     std::ifstream input(file);
-    if(!input.is_open()) {
-        std::cout << "Erro ao abrir o arquivo do mapa: " << file << std::endl;
+    if (!input.is_open()) {
+        std::cerr << "Erro ao abrir o arquivo do mapa: " << file << std::endl;
+        return;
+    }
+    mapWidth = mapHeight = mapDepth = 0; 
+
+    char comma;
+    // Verifica se a leitura das dimensões foi bem sucedida antes do resize
+    if (!(input >> mapWidth >> comma >> mapHeight >> comma >> mapDepth >> comma)) {
+        std::cerr << "Erro ao ler as dimensões do mapa!" << std::endl;
         return;
     }
 
-    char comma; // Variável para ler as vírgulas
-    input >> mapWidth >> comma >> mapHeight >> comma >> mapDepth >> comma;
-    tileMatrix.resize(mapWidth * mapHeight * mapDepth);
-
-    // Leitura dos dados do mapa. Tiles vazios são representados por -1
-    for (int i = 0; i < (int)tileMatrix.size(); i++)
-        input >> tileMatrix[i]>> comma;
+    // Garante que não tentaremos alocar memória se os valores forem zero 
+    if (mapWidth > 0 && mapHeight > 0 && mapDepth > 0) {
+        tileMatrix.resize(mapWidth * mapHeight * mapDepth);
+        for (int i = 0; i < (int)tileMatrix.size(); i++) {
+            input >> tileMatrix[i] >> comma;
+        }
+    }
 }
-
 void TileMap::SetTileSet(TileSet* tileSet) {
     this->tileSet.reset(tileSet);
 }

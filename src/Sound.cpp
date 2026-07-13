@@ -13,11 +13,17 @@ Sound::Sound(std::string file) : Sound() {
     Open(file);
 }
 
+// void Sound::Play(int times) {
+//     // Mix_PlayChannel retorna o número do canal onde o som foi reproduzido ou -1 em caso de erro
+//     channel = Mix_PlayChannel(-1, chunk.get(), times -1); // times - 1 porque o parâmetro é o número de repetições, e não o número total de vezes que o som deve ser reproduzido
+//     if (channel == -1) {
+//         std::cerr << "Erro ao reproduzir o som: " << Mix_GetError() << std::endl;
+//     }
+// }
+
 void Sound::Play(int times) {
-    // Mix_PlayChannel retorna o número do canal onde o som foi reproduzido ou -1 em caso de erro
-    channel = Mix_PlayChannel(-1, chunk, times -1); // times - 1 porque o parâmetro é o número de repetições, e não o número total de vezes que o som deve ser reproduzido
-    if (channel == -1) {
-        std::cerr << "Erro ao reproduzir o som: " << Mix_GetError() << std::endl;
+    if (chunk != nullptr) {
+        channel = Mix_PlayChannel(-1, chunk.get(), times - 1); 
     }
 }
 

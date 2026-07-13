@@ -9,13 +9,20 @@
 #include "Character.h"
 #include "AIController.h"
 
+// Inicialização da flag estática para controle de vitória no StageState 
+bool WaveSpawner::finished = false;
+
 WaveSpawner::WaveSpawner(GameObject& associated) : Component(associated) {
     zombieCounter = 0;
     currentWave = 0;
+    
+    // Reset da flag no construtor para evitar vitória instantânea em novas partidas
+    WaveSpawner::finished = false; 
 
-    waves.emplace_back(5, 2.0f);  // Onda 1: 5 zumbis, um a cada 2s
-    waves.emplace_back(10, 1.0f); // Onda 2: 10 zumbis, um a cada 1s
-    waves.emplace_back(20, 0.5f); // Onda 3: 20 zumbis, um a cada 0.5s
+    // Configuração das ondas de teste (Duas hordas de 3 inimigos)
+    waves.clear(); 
+    waves.emplace_back(3, 2.0f); // 3 inimigos, um a cada 2 segundos
+    waves.emplace_back(3, 2.0f); 
 }
 
 void WaveSpawner::Update(float dt) {
@@ -24,45 +31,45 @@ void WaveSpawner::Update(float dt) {
     // Verifica se ainda existem ondas pendentes no vetor
     if (currentWave < (int)waves.size()) {
         
-        // Se ainda faltam zumbis para nascer nessa wave e o tempo de cooldown expirou
+        // Se ainda faltam zumbis para nascer nesta wave e o tempo de espera expirou
         if (zombieCounter < waves[currentWave].zombies && zombieCooldownTimer.Get() >= waves[currentWave].cooldown) {
             
-            // Gera um ângulo aleatório para definir a direção
+            // Calcula posição aleatória em um raio de 800 pixels (fora da visão da tela)
             float angle = (rand() % 360) * (M_PI / 180.0f);
-            
-            // Define um raio de 800 pixels. Como a tela é 1200x900, 800 garante que nasçam fora da visão
             Vec2 spawnOffset = Vec2(800, 0).InclinationRad(angle); 
             
-            // Criação do GameObject do inimigo
             GameObject* enemyGo = new GameObject();
             
-            // 30% de chance de nascer um NPC, 70% de ser um Zumbi
+            // Sorteio de tipo: 30% NPCs (Character + AI) e 70% Zumbis
             if (rand() % 100 < 30) {
-                // NPCs usam Character (com a sprite de NPC) e o AIController 
                 enemyGo->AddComponent(new Character(*enemyGo, "assets/img/NPC.png", false));
                 enemyGo->AddComponent(new AIController(*enemyGo));
             } else {
                 enemyGo->AddComponent(new Zombie(*enemyGo));
             }
             
+            // Posiciona o inimigo em relação à câmera atual
             enemyGo->box.x = Camera::pos.x + 600 + spawnOffset.x; 
             enemyGo->box.y = Camera::pos.y + 450 + spawnOffset.y;
             
-            Game::GetInstance().GetState().AddObject(enemyGo);
+            // Adiciona o novo inimigo ao estado atual do jogo
+            Game::GetInstance().GetCurrentState().AddObject(enemyGo);
 
             zombieCounter++;
             zombieCooldownTimer.Restart();
         } 
+        // Condição para trocar de onda: todos os zumbis da atual devem estar mortos
         else if (zombieCounter >= waves[currentWave].zombies && Zombie::zombieCount <= 0) {
             currentWave++;
             zombieCounter = 0;
             zombieCooldownTimer.Restart();
         }
     } else {
+        // Fim de todas as ondas: seta a flag de vitória e solicita exclusão do spawner
+        WaveSpawner::finished = true; 
         associated.RequestDelete();
     }
 }
-
 
 void WaveSpawner::Render() {
 }

@@ -1,22 +1,11 @@
-#define INCLUDE_SDL
-#define INCLUDE_SDL_IMAGE
-#define INCLUDE_SDL_MIXER
-// #include "SDL_include.h"
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
-
-#include <iostream>
-
 #include "../include/Game.h"
-#include <Resources.h>
-#include <InputManager.h>
-
+#include "Resources.h"
+#include "InputManager.h"
+#include <SDL2/SDL_ttf.h>
 #include <ctime>
 #include <cstdlib>
+#include <iostream>
 
-// ponteiro que mantéma instância (única) da classe
 Game* Game::instance = nullptr;
 
 Game& Game::GetInstance() {
@@ -28,96 +17,71 @@ Game& Game::GetInstance() {
 
 
 Game::Game (std::string title, int width, int height) {
-
     if (instance != nullptr) {
-        std::cout << "Já existe uma janela do jogo aberta!" << std::endl;
+        std::cout << "Instância de Game já existe!" << std::endl;
         return;
     }
 
+    
     instance = this;
     window = nullptr;
     renderer = nullptr; 
-    state = nullptr;
-    frameStart = 0;
+    storedState = nullptr; // Inicializa o estado pendente como nulo
+    frameStart = SDL_GetTicks();
     dt = 0;
     srand(time(NULL)); 
 
-    // Inicia a biblioteca SDL e auxiliares
+    // Inicialização do SDL e subsistemas (Audio, Video, Timer)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0) {
-        std::cout << "Erro ao iniciar SDL: " << SDL_GetError() << std::endl;
+        std::cout << "Erro SDL: " << SDL_GetError() << std::endl;
         exit(1);
     }
 
-    // Inicia a biblioteca SDL_image
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        std::cout << "Erro ao iniciar SDL_image: " << IMG_GetError() << std::endl;
-        exit(1);
-    }
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) exit(1);
 
-    // Inicia a biblioteca de sons
     Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
-
-    if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) != 0) {
-        std::cout << "Erro ao iniciar SDL_mixer: " << Mix_GetError() << std::endl;
-        exit(1);
-    }
-
-    // Aloca 32 canais para produzir e reproduzir 32 sons simultaneamente
+    if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) != 0) exit(1);
     Mix_AllocateChannels(32);
 
-    // Cria a janela com o título e dimensões fornecidas. Posiciona ela no centro da tela
-    window = SDL_CreateWindow(
-        title.c_str(),
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        width,
-        height,
-        0
-    );
-
-    if (window == nullptr) {
-        std::cout << "Erro ao criar janela: " << SDL_GetError() << std::endl;
+    // Inicializa a SDL_ttf para renderização de texto
+    if (TTF_Init() != 0) {
+        std::cout << "Erro TTF: " << TTF_GetError() << std::endl;
         exit(1);
     }
 
-    // Cria um renderizador para desenhar na janela
+    window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    if (renderer == nullptr) {
-        std::cout << "Erro ao criar renderizador: " << SDL_GetError() << std::endl;
-        exit(1);
-    }
-
-    state = new State();
 }
 
 Game::~Game() {
-    if (state != nullptr) {
-        delete state;
-        state = nullptr;
-    }
+    if (storedState != nullptr) delete storedState;
+    
+    // Esvazia a pilha de estados para liberar memória
+    while (!stateStack.empty()) stateStack.pop();
 
-    // Fecha as bibliotecas de imagem e audio
+    Resources::ClearImages();
+    Resources::ClearMusics();
+    Resources::ClearSounds();
+    Resources::ClearFonts();
+
+    TTF_Quit(); // Finaliza biblioteca de texto
     Mix_CloseAudio();
     Mix_Quit();
     IMG_Quit();
-
-    // Fecha o renderizador e a janela
-    if (renderer != nullptr) {
-        SDL_DestroyRenderer(renderer);
-        renderer = nullptr;
-    }
-
-    if (window != nullptr) {
-        SDL_DestroyWindow(window);
-        window = nullptr;
-    }
-
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
     SDL_Quit();
 }
 
-State& Game::GetState() {
-    return *state;
+// Retorna o estado que está no topo da pilha atual
+State& Game::GetCurrentState() {
+    return *stateStack.top();
+}
+
+// agenda o novo estado para ser empilhado no início do próximo frame
+void Game::Push(State* state) {
+    storedState = state;
 }
 
 SDL_Renderer* Game::GetRenderer() {
@@ -125,39 +89,57 @@ SDL_Renderer* Game::GetRenderer() {
 }
 
 void Game::Run() {
-    state->Start();
-    while (!state->QuitRequested()) {
+    // Processa o estado inicial vindo da main
+    if (storedState != nullptr) {
+        stateStack.push(std::unique_ptr<State>(storedState));
+        stateStack.top()->Start();
+        storedState = nullptr;
+    }
+
+    // O loop roda enquanto houver estados e o atual não pedir Quit
+    while (!stateStack.empty() && !stateStack.top()->QuitRequested()) {
         
+        // GERENCIAMENTO DA PILHA
+        // Se o estado pediu pra sair remove e retoma o de baixo
+        if (stateStack.top()->PopRequested()) {
+            stateStack.pop();
+            Resources::ClearImages();
+            Resources::ClearMusics();
+            Resources::ClearSounds();
+            Resources::ClearFonts();
+
+            if (!stateStack.empty()) stateStack.top()->Resume();
+        }
+
+        // Se tem um novo estado agendado, pausa o atual e empilha o novo
+        if (storedState != nullptr) {
+            if (!stateStack.empty()) stateStack.top()->Pause();
+            stateStack.push(std::unique_ptr<State>(storedState));
+            stateStack.top()->Start();
+            storedState = nullptr;
+        }
+
+        // CICLO DE FRAME PADRÃO
         CalculateDeltaTime();
         InputManager::GetInstance().Update();
 
-        
         SDL_RenderClear(renderer);
-
-        state->Update(dt);
-        state->Render();
-
+        if (!stateStack.empty()) {
+            stateStack.top()->Update(dt);
+            stateStack.top()->Render();
+        }
         SDL_RenderPresent(renderer);
         SDL_Delay(33);
     }
-
-    Resources::ClearImages();
-    Resources::ClearMusics();
-    Resources::ClearSounds();
+        while (!stateStack.empty()) stateStack.pop();
 }
- 
-
-
 
 void Game::CalculateDeltaTime() {
-    
     int currentTime = SDL_GetTicks();
-    // frameAtual - frameAnterior em segundos
     dt = (currentTime - frameStart) / 1000.0f;
     frameStart = currentTime;
 }
 
 float Game::GetDeltaTime() {
-    CalculateDeltaTime();
     return dt;
 }
