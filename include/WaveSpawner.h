@@ -20,6 +20,7 @@ public:
     
     void Render() override;
 
+    static bool finished;                // Indica se todas as waves foram completadas
 private:
     int zombieCounter;           // Conta os zumbis já spawnados
     int currentWave;             // Índice da wave atual

@@ -16,7 +16,7 @@ Music::~Music () {}
 
 void Music::Play (int times) {
     if (music != nullptr)
-        Mix_PlayMusic (music, times);
+        Mix_PlayMusic (music.get(), times);
     
     // Tratamento de erro
     else

@@ -41,7 +41,7 @@ void Sprite::Open(std::string file) {
     }
 
     // Obtém a largura e altura total da textura usando SDL_QueryTexture
-    SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
+    SDL_QueryTexture(texture.get(), nullptr, nullptr, &width, &height);
     SetClip(0, 0, GetWidth(), GetHeight()); 
 
 }
@@ -54,16 +54,23 @@ void Sprite::SetClip(int x, int y, int w, int h) {
 }
 
 void Sprite::SetFrame(int frame) {
+    
+    if (frame >= (frameCountW * frameCountH) || frame < 0)
+        return;
+
     currentFrame = frame;
 
     int framWidth = GetWidth();
     int frameHeight = GetHeight();
 
-
-    int row = frame / frameCountW;
-    int col = frame % frameCountW;
-
-    SetClip(col * framWidth, row * frameHeight, framWidth, frameHeight);
+    
+    if (frameCountW > 0) {
+        int row = frame / frameCountW; 
+        int col = frame % frameCountW;
+        
+        // Define o recorte (clip) na textura original
+        SetClip(col * framWidth, row * frameHeight, framWidth, frameHeight);
+    }
 }
 
 void Sprite::SetFrameCount(int frameCountW, int frameCountH) {
@@ -87,7 +94,7 @@ void Sprite::Render(int x, int y, int w, int h, float angle) {
     dstRect.w = (w != 0) ? w : GetWidth(); 
     dstRect.h = (h != 0) ? h : GetHeight();
 
-    SDL_RenderCopyEx(Game::GetInstance().GetRenderer(), texture, &clipRect, &dstRect, angle, nullptr, flip);
+    SDL_RenderCopyEx(Game::GetInstance().GetRenderer(), texture.get(), &clipRect, &dstRect, angle, nullptr, flip);
 
 }
 

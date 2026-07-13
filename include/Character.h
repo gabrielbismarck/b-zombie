@@ -33,12 +33,12 @@ class Character : public Component {
         static Character* player;
 
         
+        int hp;
     private:
         std::weak_ptr<GameObject> gun;
         std::queue<Command> taskQueue;
         Vec2 speed;
         float linearSpeed;
-        int hp;
         Timer deathTimer;
         Timer damageTimer;
         bool isPlayer;

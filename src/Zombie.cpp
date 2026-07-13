@@ -25,6 +25,7 @@ Zombie::Zombie(GameObject& associated) : Component(associated){
     hit = false;
 
     associated.AddComponent(new SpriteRenderer(associated, "assets/img/Enemy.png", 3, 2));
+    Zombie::zombieCount++; 
     
     Animator* anim = new Animator(associated);
 
@@ -81,7 +82,7 @@ void Zombie::Update(float dt){
             anim->SetAnimation("dead");
         }
 
-        // Atualiza o timer e deleta o objeto após 1.5 segundos [16, p. 118]
+        // Atualiza o timer e deleta o objeto após 1.5 segundos
         deathTimer.Update(dt); 
         if (deathTimer.Get() >= 1.5f) {
             associated.RequestDelete();
@@ -135,11 +136,10 @@ void Zombie::Render(){
 
 void Zombie::NotifyCollision(GameObject& other) {
     if (auto bullet = (Bullet*)other.GetComponent<Bullet>()) {
-        if (!bullet->targetsPlayer) { // Filtro de Friendly Fire [18, p. 156]
+        if (!bullet->targetsPlayer) { 
             hitpoints -= bullet->GetDamage();
 
             if (hitpoints <= 0) {
-                // MODIFICAÇÃO: Remover colisor ao morrer para não travar balas [18, p. 163]
                 associated.RemoveComponent(associated.GetComponent<Collider>());
                 
                 if (auto anim = associated.GetComponent<Animator>()) {
@@ -147,7 +147,6 @@ void Zombie::NotifyCollision(GameObject& other) {
                 }
                 deathSound.Play(); 
             } else {
-                // MODIFICAÇÃO: Ativar flag e timer para a animação de Hit funcionar
                 hit = true;
                 hitTimer.Restart();
                 if (auto anim = associated.GetComponent<Animator>()) {

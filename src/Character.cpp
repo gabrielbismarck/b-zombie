@@ -47,17 +47,44 @@ void Character::Start() {
     GameObject* gunGo = new GameObject();
     
     // Obtém o ponteiro para o GameObject associado ao Character para passar para a Gun
-    std::weak_ptr<GameObject> characterPtr = Game::GetInstance().GetState().GetObjectPtr(&associated);
+    std::weak_ptr<GameObject> characterPtr = Game::GetInstance().GetCurrentState().GetObjectPtr(&associated);
 
     gunGo->AddComponent(new Gun(*gunGo, characterPtr));
     
     // Adiciona a arma ao estado para que ela seja gerenciada corretamente e guarda o ponteiro fraco para ela na variável gun
-    gun = Game::GetInstance().GetState().AddObject(gunGo);
+    gun = Game::GetInstance().GetCurrentState().AddObject(gunGo);
 }
 
 void Character::Update(float dt) {
 
     damageTimer.Update(dt);
+
+    if (hp <= 0) {
+        // Limpa a fila para garantir que nenhum comando seja executado
+        while (!taskQueue.empty()) taskQueue.pop();
+        
+        speed = Vec2(0, 0);
+
+        if (auto gunPtr = gun.lock()) {
+            gunPtr->RequestDelete();
+        }
+        if (auto collider = associated.GetComponent<Collider>()) {
+            associated.RemoveComponent(collider);
+        }
+
+        Animator* anim = associated.GetComponent<Animator>();
+        if (anim != nullptr) {
+            anim->SetAnimation("dead");
+        }
+
+        deathTimer.Update(dt);
+        if (deathTimer.Get() >= 1.5f) {
+            associated.RequestDelete();
+        }
+        
+        return; 
+    }
+
 
     while (!taskQueue.empty()) {
         Command task = taskQueue.front();
@@ -76,40 +103,33 @@ void Character::Update(float dt) {
             }
         }
     }
-
+   
     associated.box.x += speed.x * dt;
     associated.box.y += speed.y * dt;
 
-    Animator* anim = associated.GetComponent<Animator>();
+    if (associated.box.x < 640)
+        associated.box.x = 640;
+    if (associated.box.x + associated.box.w > 1920)
+        associated.box.x = 1920 - associated.box.w; // 640 + 1280
+    if (associated.box.y < 512)
+        associated.box.y = 512;
+    if (associated.box.y + associated.box.h > 2048)
+        associated.box.y = 2048 - associated.box.h; // 512 + 1536
+
+     Animator* anim = associated.GetComponent<Animator>();
     SpriteRenderer* sr = associated.GetComponent<SpriteRenderer>();
 
-    if (anim != nullptr)
-        if (hp <= 0){
-            if (auto collider = associated.GetComponent<Collider>()) {
-                associated.RemoveComponent(collider);
-            }
-
-            anim->SetAnimation("dead");
-            deathTimer.Update(dt);
-
-            if (deathTimer.Get() >= 1.5f)
-                associated.RequestDelete();
-        } 
-        else if (speed.Mag() > 0) {
-            
+    if (anim != nullptr) {
+        if (speed.Mag() > 0) {
             anim->SetAnimation("walking");
             if (sr != nullptr) {
-                if (speed.x < 0) {
-                    sr->SetFlip(SDL_FLIP_HORIZONTAL);
-                } else if (speed.x > 0) {
-                    sr->SetFlip(SDL_FLIP_NONE);
-                }
+                if (speed.x < 0) sr->SetFlip(SDL_FLIP_HORIZONTAL);
+                else if (speed.x > 0) sr->SetFlip(SDL_FLIP_NONE);
             }
-
         } else {
-            
             anim->SetAnimation("idle");
         }
+    }
     
     speed = Vec2(0, 0);
 }
@@ -147,7 +167,7 @@ void Character::NotifyCollision(GameObject& other) {
     // Checa colisão com Zombies (Dano por contato com cooldown de 0.5s)
     if (other.GetComponent<Zombie>() != nullptr && this == player) {
         if (damageTimer.Get() >= 0.5f) {
-            hp -= 1; // Dano fixo por contato com zumbi
+            hp -= 10; // Dano fixo por contato com zumbi
             damageTimer.Restart();
             
             // Removido 'associated'

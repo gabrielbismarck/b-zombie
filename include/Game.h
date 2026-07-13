@@ -1,22 +1,22 @@
-#ifndef GAME_H
-#define GAME_H
-
-#define INCLUDE_SDL
-#include <string>
-#include <SDL_include.h>
+#include <stack>
+#include <memory>
 #include "State.h"
+#include "SDL_ttf.h"
 
 class Game {
     public:
         static Game& GetInstance();
         ~Game ();
         
-        State& GetState ();
+        // Retorna o estado que está no topo da pilha
+        State& GetCurrentState (); 
         SDL_Renderer* GetRenderer ();
         
         float GetDeltaTime ();
-
         void Run ();
+
+        // Agenda o empilhamento de um novo estado
+        void Push(State* state); 
 
     private:
         Game (std::string title, int width, int height);
@@ -24,12 +24,12 @@ class Game {
         static Game* instance;
         SDL_Window* window;
         SDL_Renderer* renderer;
-        State* state;
+        
+        // Gerenciamento de pilha
+        State* storedState; 
+        std::stack<std::unique_ptr<State>> stateStack;
 
         int frameStart;
         float dt;
         void CalculateDeltaTime();
-
 };
-
-#endif
